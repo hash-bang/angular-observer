@@ -167,12 +167,14 @@ The following events can be attached to any Observable instance:
 TODO
 ====
 
-* [ ] Emitters that can only fire once
-* [ ] Config parameter - `$observe(scope, path, config)`
-* [ ] Callbacks without events - `$observe([scope], path, callback)`
-* [ ] Deep watching  via `config.deep = true`
-* [ ] Depth specifier via `$observe(scope, path, [callback], depth)`
-* [ ] Depth specifier via `config.depth = Boolean | Number`
+* [x] Emitters that can only fire once
+* [x] Config parameter - `$observe(scope, path, config)`
+* [x] Callbacks without events - `$observe([scope], path, callback)`
+* [x] Deep watching  via `config.deep = true`
+* [x] Depth specifier via `$observe(scope, path, [callback], depth)`
+* [x] Depth specifier via `config.depth = Boolean | Number`
 * [ ] Paths can be arrays (for group support)
-* [ ] Backwards port fix - `$observe.collection(scope, path)`
 * [ ] Ignore paths array - `Observer.ignore(path...)`
+* [ ] Relative paths (defaults to true if only one path is being watched)
+* [ ] Path globbing
+* [ ] Old values in emitters
