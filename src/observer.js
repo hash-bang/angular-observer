@@ -96,11 +96,7 @@ var $observe = function(scope, path, callback, params) {
 		} else {
 			var modified = [];
 			observe.traverse(function(v, key, path) {
-				if (!path.length) {
-					// Root node - do nothing
-				} else if (observe.isModified(path)) {
-					modified.push(path.join('.'));
-				}
+				if (observe.isModified(path)) modified.push(path.join('.'));
 			});
 			return modified;
 		}
