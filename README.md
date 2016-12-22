@@ -40,6 +40,48 @@ Installation
 For a more complex example see the [demo](demo/) directory.
 
 
+Migration
+=========
+The `$observe()` call is compatible with Angulars `$watch()`, `$watchGroup()` and `$watchCollection()` with minimal changes.
+
+Since `$observe()` can mix-and-match these approches it is also possible that we can support hybrid observers such as deep, multi-collection watching.
+
+
+$scope.$watch(path | func, callback)
+------------------------------------
+You can use any of the following patterns:
+
+* `$observe(this, path, callback)`
+* `$observe(this, path).on('change', callback)`
+
+
+$scope.$watch(path | func, callback, true)
+------------------------------------------
+Deep watching can be acomplished with any of the following:
+
+* `$observe(this, path, callback, true)`
+* `$observe(this, path, {deep: true}).on('change', callback)`
+* `$observe.deep(this, path, callback)`
+* `$observe.deep(this, path).on('change', callback)`
+
+
+$scope.$watchGroup(paths..., callback)
+--------------------------------------
+Path can already be an array in a $observe call so any of the usage patterns available with a regular `$observe()` call will all work.
+
+
+$scope.$watchCollection(path | func, callback)
+----------------------------------------------
+Watching a collection with `$observe()` is essencially just specifying that the `depth = 2` (watch only the immediate array indexes AND the keys of the sub-object).
+
+Any of the following patterns should work:
+
+* `$observe(this, path, callback, 2)`
+* `$observe(this, path, {deep: 2}).on('change', callback)`
+* `$observe.deep(this, path, callback, 2)`
+* `$observe.deep(this, path, 2).on('change', callback)`
+
+
 API
 ===
 The below API repersents the developer-facing functionality. For a full list of functions, methods and variables please read the source code JSDoc comments instead.
