@@ -22,7 +22,9 @@ angular.module('angular-observer', [])
 	};
 })
 .factory('$observe', function($observeProvider, $timeout) {
-	// INCLUDE observer.js //
+	// INCLUDE src/observer.js //
 
 	$observe.checkAll = $observeProvider.checkAll;
+
+	return $observe;
 });

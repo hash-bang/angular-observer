@@ -32,7 +32,7 @@ app.get('/js/angular-undobuffer.js', function(req, res) {
 });
 
 app.get('/js/angular-observer.js', function(req, res) {
-	res.sendFile('angular-observer.js', {root: root});
+	res.sendFile('angular-observer.js', {root: root + '/dist'});
 });
 
 app.use(function(err, req, res, next){
