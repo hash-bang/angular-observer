@@ -1,10 +1,30 @@
 var _ = require('lodash');
 
-var $observe = function(scope, path) {
+var $observe = function(scope, path, callback, params) {
 	var observe = this;
 	observe.scope = scope;
 	observe.path = path;
 	observe.originalValues = {};
+	observe.deep = false;
+
+	// Argument juggling {{{
+	if (!scope) {
+		throw new Error('You must specify a scope to use');
+	} else if (!path) {
+		throw new Error('You must specify a path to watch');
+	} else if (_.isObject(callback)) {
+		params = callback;
+		callback = undefined;
+	}
+	// }}}
+	// Import params {{{
+	if (_.isObject(params)) {
+		if (params.deep) {
+			if (!_.isNumber(params.deep) && params.deep !== true) throw new Error('Deep config option either should be a maximum depth number or boolean true');
+			observe.deep = params.deep;
+		}
+	}
+	// }}}
 
 
 	/**
@@ -28,9 +48,10 @@ var $observe = function(scope, path) {
 		if (!path && _.isUndefined(item)) { // If we we're passed undefined assume the user wanted to just use observe.get()
 			return observe.traverse(cb, [], observe.get(), 0);
 		} else if (_.isArray(item)) {
+			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
 			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v), depth ? depth + 1 : 1);
 		} else if (_.isObject(item)) {
-			console.log('INTO', _.keys(item));
+			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
 			_.keys(item).forEach((k) => observe.traverse(cb, (path||[]).concat([k]), item[k]), depth ? depth + 1 : 1);
 		} else {
 			cb(item, path ? path[path.length-1] : '', path||[]);
