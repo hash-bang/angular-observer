@@ -1,7 +1,7 @@
 var expect = require('chai').expect;
 var $observe = require('../src/observer');
 
-describe('$observe - simple cases', function() {
+describe('$observe - grouping (multiple paths)', function() {
 	it('should watch multiple paths of scalar objects', function(next) {
 		var scope = {
 			str: 'string',
@@ -33,7 +33,7 @@ describe('$observe - simple cases', function() {
 			},
 			bar: 321,
 			baz: {
-				bazFooX: [17, 18, 19],
+				bazFoo: [17, 18, 19],
 				bazBaz: true,
 			},
 		};
@@ -43,12 +43,12 @@ describe('$observe - simple cases', function() {
 		var observer = $observe.deep(scope, ['foo.fooFoo', 'bar', 'baz.bazFoo'])
 			.on('path', (p, v) => changedPaths.push(p))
 			.on('finally', _=> {
-				expect(changedPaths).to.deep.equal(['foo.fooFoo']);
+				expect(changedPaths).to.deep.equal(['foo.fooFoo', 'baz.bazFoo.3']);
 				next();
 			})
 
 		scope.foo.fooFoo++;
-		// scope.baz.bazFoo.push(20);
+		scope.baz.bazFoo.push(20);
 		observer.check();
 	});
 });
