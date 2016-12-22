@@ -13,6 +13,7 @@ angular.module('app', ['angular-observer'])
 					if (path == 'project') return; // Omit the self-evident project changes
 					$ctrl.history.push({type: 'path', text: 'Path changed: ' + path});
 				})
+				.on('destroy', _=> $ctrl.history.push({type: 'destroy', text: 'Destroyed! You may need to refresh the page to get everything working again'}))
 
 			$ctrl.$doCheck = $observe.checkAll;
 

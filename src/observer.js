@@ -1,7 +1,7 @@
 var _ = require('lodash');
 
 var $observe = function(scope, paths, callback, params) {
-	var observe = this;
+	var observe = new Object();
 	observe.scope = scope;
 	observe.paths = _.castArray(paths);
 	observe.originalValues = {};
@@ -241,6 +241,16 @@ var $observe = function(scope, paths, callback, params) {
 			}
 		});
 		return observe;
+	};
+	// }}}
+
+	// Destruction {{{
+	/**
+	* Destroys this object and deregisters it with the $observeProvider service
+	*/
+	observe.destroy = function() {
+		// INCLUDEIF $observeProvider: $observeProvider.deregister(observe); //
+		observe.emit('destroy');
 	};
 	// }}}
 

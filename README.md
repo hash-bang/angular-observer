@@ -138,15 +138,20 @@ Observable.get([path])
 Fetch the object being observed or a path within it.
 
 
-Observable.traverse([callback], [path])
----------------------------------------
-Run a callback on every item within the current object.
+Observable.destroy()
+--------------------
+Destroy the observer and deregister it with `$observeProvider` so it no longer receieves updates.
 
 
 Observable.isModified([path])
 -----------------------------
 If called with no path this function returns an array of all modified paths within the object.
 If given a specific path to examine this function returns a boolean indicating if that path has been modified.
+
+
+Observable.traverse([callback], [path])
+---------------------------------------
+Run a callback on every item within the current object.
 
 
 $observeProvider
@@ -166,6 +171,7 @@ The following events can be attached to any Observable instance:
 | Event        | Parameters         | Description                                                                                     |
 |--------------|--------------------|-------------------------------------------------------------------------------------------------|
 | `change`     | `(newValue)`       | Emitted if any part of the observable target changes                                            |
+| `destroy`    | `()`               | Emitted when the observer is destroyed                                                          |
 | `key`        | `(key, newValue)`  | Emitted if the observable target is an object and any of the *top level only* key values change |
 | `path`       | `(path, newValue)` | Emitted if any deeply nested paths change within the observable                                 |
 | `postChange` | `(newValue)`       | Emitted after all other keys have finished before the next injection stage                      |
@@ -187,3 +193,6 @@ TODO
 * [x] Relative paths (defaults to true if only one path is being watched)
 * [ ] Path globbing
 * [ ] Old values in emitters
+* [x] Observer destruction
+* [ ] Observer pausing
+* [ ] Setting - ignore initial undefined
