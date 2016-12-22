@@ -12,8 +12,12 @@ describe('$observe - deep watching', function() {
 			},
 		};
 
-		var observer = $observe(scope, 'foo')
+		var observer = $observe.deep(scope, 'foo')
 			.on('change', v => expect(v).to.have.deep.property('foo.bar.baz', 'baz2'))
+			.on('path', (p, v) => {
+				expect(p).to.equal('foo.bar.baz');
+				expect(v).to.equal('baz2');
+			})
 			.on('finally', next)
 
 		scope.foo.bar.baz = 'baz2';
@@ -26,17 +30,20 @@ describe('$observe - deep watching', function() {
 				bar: {
 					baz: 'baz',
 				},
+				baz: 'baz',
 			},
-			bar: 'bar',
-			baz: 'baz',
 		};
 
-		var observer = $observe(scope, 'foo')
-			.on('change', v => expect(v).to.have.deep.property('foo.bar.baz', 'baz2'))
-			.on('path', (v, p) => expect(p).to.not.equal('foo.bar.baz'))
-			.one('finally', next)
+		var changedPaths = [];
 
-		scope.baz = 'baz2';
+		var observer = $observe(scope, 'foo')
+			.on('path', (p, v) => changedPaths.push(p))
+			.on('finally', _=> {
+				expect(changedPaths).to.deep.equal(['foo.baz']);
+				next();
+			});
+
+		scope.foo.baz = 'baz2';
 		scope.foo.bar.baz = 'baz2';
 		observer.check();
 	});
@@ -47,23 +54,24 @@ describe('$observe - deep watching', function() {
 				bar: {
 					baz: 'baz',
 				},
+				baz: 'baz',
 			},
-			bar: 'bar',
-			baz: 'baz',
 		};
+
+		var changedPaths = [];
 
 		var observer = $observe(scope, 'foo')
 			.on('change', v => {
 				expect(v).to.have.deep.property('foo.bar.baz', 'baz2');
 				expect(v).to.have.deep.property('foo.quz', 'quz');
 			})
-			.on('path', (v, p) => {
-				mlog.log('saw change in', p);
-				expect(p).to.not.equal('foo.bar.baz');
-			})
-			.one('finally', next)
+			.on('path', (p, v) => changedPaths.push(p))
+			.on('finally', _=> {
+				expect(changedPaths).to.deep.equal(['foo.baz', 'foo.quz']);
+				next();
+			});
 
-		scope.baz = 'baz2';
+		scope.foo.baz = 'baz2';
 		scope.foo.quz = 'quz';
 		scope.foo.bar.baz = 'baz2';
 		observer.check();

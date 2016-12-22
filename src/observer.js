@@ -5,19 +5,20 @@ var $observe = function(scope, path, callback, params) {
 	observe.scope = scope;
 	observe.path = path;
 	observe.originalValues = {};
-	observe.deep = false;
+	observe.deep = 1;
 
 	// Argument juggling {{{
 	if (!scope) {
 		throw new Error('You must specify a scope to use');
 	} else if (!path) {
 		throw new Error('You must specify a path to watch');
-	} else if (_.isObject(callback)) {
+	} else if (_.isObject(callback) || _.isNumber(callback)) {
 		params = callback;
 		callback = undefined;
 	}
 	// }}}
 	// Import params {{{
+	if (_.isNumber(params)) params.deep = params;
 	if (_.isObject(params)) {
 		if (params.deep) {
 			if (!_.isNumber(params.deep) && params.deep !== true) throw new Error('Deep config option either should be a maximum depth number or boolean true');
@@ -50,10 +51,10 @@ var $observe = function(scope, path, callback, params) {
 			return observe.traverse(cb, [], observe.get(), 0);
 		} else if (_.isArray(item)) {
 			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
-			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v), depth ? depth + 1 : 1);
+			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v, depth ? depth + 1 : 1));
 		} else if (_.isObject(item)) {
 			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
-			_.keys(item).forEach((k) => observe.traverse(cb, (path||[]).concat([k]), item[k]), depth ? depth + 1 : 1);
+			_.keys(item).forEach((k) => observe.traverse(cb, (path||[]).concat([k]), item[k], depth ? depth + 1 : 1));
 		} else {
 			cb(item, path ? path[path.length-1] : '', path||[]);
 		}
@@ -233,6 +234,27 @@ var $observe = function(scope, path, callback, params) {
 
 	setTimeout(_=> observe.emit('init')); // Fire init on the next cycle so everything has the chance to register
 	return observe;
+};
+
+
+/**
+* Alias to quickly setup a deep watcher
+* @example
+* $observe.deep(SCOPE, PATH, 2) // Only scan 2 levels deep
+* $observe.deep(SCOPE, PATH) // Only scan 1 levels deep
+* @see $observe
+*/
+$observe.deep = function(scope, path, callback, params) {
+	// Argument mangling {{{
+	if (_.isObject(callback) || _.isNumber(callback)) {
+		params = callback;
+		callback = undefined;
+	}
+	// }}}
+	if (!_.isObject(params)) params = {};
+	params.deep = _.isNumber(params) ? params : true;
+
+	return $observe(scope, path, callback, params);
 };
 
 module.exports = $observe;
