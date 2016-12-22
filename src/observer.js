@@ -228,6 +228,8 @@ var $observe = function(scope, path, callback, params) {
 	};
 	// }}}
 
+	if (_.isFunction(callback)) observe.on('change', callback); // Passed a callback during invoke - attach to 'change' hook
+
 	setTimeout(_=> observe.emit('init')); // Fire init on the next cycle so everything has the chance to register
 	return observe;
 };
