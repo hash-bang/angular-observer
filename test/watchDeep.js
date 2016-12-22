@@ -1,5 +1,4 @@
 var expect = require('chai').expect;
-var mlog = require('mocha-logger');
 var $observe = require('../src/observer');
 
 describe('$observe - deep watching', function() {
