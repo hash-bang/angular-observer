@@ -1,6 +1,6 @@
 {
   "name": "angular-observer",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Observe mutations to a scalar, object or array in Angular",
   "main": "src/observer.js",
   "scripts": {
