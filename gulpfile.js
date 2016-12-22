@@ -1,8 +1,10 @@
+var annotate = require('gulp-ng-annotate');
 var babel = require('gulp-babel');
 var gulp = require('gulp');
 var fs = require('fs');
 var rename = require('gulp-rename');
 var replace = require('gulp-replace');
+var uglify = require('gulp-uglify');
 
 gulp.task('default', ['build']);
 
@@ -16,5 +18,7 @@ gulp.task('build', function () {
 		.pipe(replace(/\/\/ INCLUDEIF \$observeProvider: (.+?) \/\//g, '$1'))
 		.pipe(babel({presets: ['es2015']}))
 		.pipe(replace(/^'use strict';$/gm, ''))
+		.pipe(annotate())
+		.pipe(uglify({mangle: false}))
 		.pipe(gulp.dest('./dist'));
 });
