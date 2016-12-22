@@ -1,17 +1,17 @@
 var _ = require('lodash');
 
-var $observe = function(scope, path, callback, params) {
+var $observe = function(scope, paths, callback, params) {
 	var observe = this;
 	observe.scope = scope;
-	observe.path = path;
+	observe.paths = _.castArray(paths);
 	observe.originalValues = {};
 	observe.deep = 1;
 
 	// Argument juggling {{{
 	if (!scope) {
 		throw new Error('You must specify a scope to use');
-	} else if (!path) {
-		throw new Error('You must specify a path to watch');
+	} else if (!paths) {
+		throw new Error('You must specify a path or paths to watch');
 	} else if (_.isObject(callback) || _.isNumber(callback)) {
 		params = callback;
 		callback = undefined;
@@ -30,7 +30,7 @@ var $observe = function(scope, path, callback, params) {
 
 	/**
 	* Get the current value of the watch item
-	* @param {string|array} path Additional path to append onto the default
+	* @param {string|array} path Additional path to append onto the scope
 	* @return {mixed} The current watch item
 	*/
 	observe.get = function(path) {
@@ -42,13 +42,13 @@ var $observe = function(scope, path, callback, params) {
 	/**
 	* Walk every item in the tree running a callback on each
 	* @param {function} cb The callback to run. This is excuted with (value, key, path) where path is an array of all path segments of that item
-	* @param {array} [path] The specific path to examine
+	* @param {array} [path] The specific path to examine relative to the scope
 	* @param {mixed} [item] A specific item to start at
 	* @param {number} [depth] The current depth of traversal (used to stop traversing when we're above observe.depth)
 	*/
 	observe.traverse = function(cb, path, item, depth) {
-		if (!path && _.isUndefined(item)) { // If we we're passed undefined assume the user wanted to just use observe.get()
-			return observe.traverse(cb, [], observe.get(), 0);
+		if (!path && _.isUndefined(item)) { // If we we're passed undefined assume the user wanted to traverse all specified paths
+			observe.paths.forEach(path => observe.traverse(cb, path.split('.'), observe.get(path), 1));
 		} else if (_.isArray(item)) {
 			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
 			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v, depth ? depth + 1 : 1));
@@ -232,6 +232,7 @@ var $observe = function(scope, path, callback, params) {
 
 	if (_.isFunction(callback)) observe.on('change', callback); // Passed a callback during invoke - attach to 'change' hook
 
+	observe.inject();
 	setTimeout(_=> observe.emit('init')); // Fire init on the next cycle so everything has the chance to register
 	return observe;
 };
