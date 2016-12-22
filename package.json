@@ -1,0 +1,24 @@
+{
+  "name": "angular-observer",
+  "version": "0.0.0",
+  "description": "Observe mutations to a scalar, object or array in Angular",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "observe",
+    "mutate",
+    "angular"
+  ],
+  "author": "Matt Carter <m@ttcarter.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "angular": "^1.6.0",
+    "bootstrap": "^3.3.7",
+    "express": "^4.14.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "lodash": "^4.17.2"
+  }
+}

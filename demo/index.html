@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Angular-Observer</title>
+	<meta http-equiv="Content-Language" content="en"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="google" value="notranslate"/>
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+	<meta name="apple-mobile-web-app-status-bar-style" content="yes"/>
+	<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimal-ui"/>
+
+	<!-- jQuery -->
+	<script src="/node_modules/jquery/dist/jquery.min.js"></script>
+
+	<!-- Bootstrap -->
+	<link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+	<script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+	<!-- Font-awesome -->
+	<link href="/node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+	<!-- lodash -->
+	<script src="/node_modules/lodash/lodash.min.js"></script>
+
+	<!-- Angular -->
+	<script src="/node_modules/angular/angular.min.js"></script>
+
+	<!-- Demo setup -->
+	<script src="/js/app.js"></script>
+
+	<!-- Angular-Observer -->
+	<script src="/js/angular-observer.js"></script>
+</head>
+<style>
+a {
+	cursor: pointer;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+td > a {
+	display: block;
+}
+
+.mar-top-md {
+	margin-top: 10px;
+}
+
+input[type="checkbox"] {
+	width: 20px;
+	height: 20px;
+	vertical-align: bottom;
+}
+</style>
+
+<body ng-app="app">
+	<div class="container">
+		<div class="alert alert-info">
+			<a data-dismiss="alert" class="pull-right"><i class="fa fa-times"></i></a>
+			<p>An extremely simple example of the Angular-Observer service in action.</p>
+			<p>This project loads a simple Angular structure, populates a dummy project and watches for changes.</p>
+		</div>
+	</div>
+
+	<div class="container">
+		<demo-ctrl>
+			<div class="row">
+				<div class="col-sm-12 col-md-6">
+					<pre>{{$ctrl.project | json}}</pre>
+				</div>
+				<div class="col-sm-12 col-md-6">
+					<div class="panel panel-primary">
+						<div class="panel-heading">Project controls</div>
+						<div class="panel-body">
+							<div class="btn-group">
+								<a ng-click="$ctrl.resetProject()" class="btn btn-primary"><i class="fa fa-random"></i> Randomize entire project</a>
+							</div>
+							<div class="btn-group">
+								<a ng-click="$ctrl.randomizeObject($ctrl.project, 1)" class="btn btn-primary"><i class="fa fa-plus"></i> 1</a>
+								<a ng-click="$ctrl.randomizeObject($ctrl.project, 2)" class="btn btn-primary"><i class="fa fa-plus"></i> 2</a>
+								<a ng-click="$ctrl.randomizeObject($ctrl.project, 3)" class="btn btn-primary"><i class="fa fa-plus"></i> 3</a>
+								<a ng-click="$ctrl.randomizeObject($ctrl.project, 10)" class="btn btn-primary"><i class="fa fa-plus"></i> 10</a>
+							</div>
+							<div class="btn-group">
+								<a ng-click="$ctrl.addSequencial()" class="btn btn-primary"><i class="fa fa-plus"></i> Seq</a>
+							</div>
+							<div class="btn-group">
+								<a ng-click="$ctrl.traverse()" class="btn btn-primary"><i class="fa fa-sitemap"></i> traverse()</a>
+							</div>
+						</div>
+					</div>
+					<div class="panel panel-primary">
+						<div class="panel-heading">Event History (recent at top)</div>
+						<div class="panel-body">
+							<ul class="list-unstyled">
+								<li ng-repeat="hist in $ctrl.history | orderBy:$index:true">
+									<strong>{{hist.type}}</strong>
+									{{hist.text}}
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</demo-ctrl>
+	</div>
+</body>
