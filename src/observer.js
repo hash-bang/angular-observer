@@ -20,16 +20,18 @@ var $observe = function(scope, path) {
 	/**
 	* Walk every item in the tree running a callback on each
 	* @param {function} cb The callback to run. This is excuted with (value, key, path) where path is an array of all path segments of that item
+	* @param {array} [path] The specific path to examine
 	* @param {mixed} [item] A specific item to start at
-	* @param {array} [path] If item is specified this is the path segement to pass to the callback
+	* @param {number} [depth] The current depth of traversal (used to stop traversing when we're above observe.depth)
 	*/
-	observe.traverse = function(cb, item, path) {
-		if (_.isUndefined(item) && !path) { // If we we're passed undefined assume the user wanted to just use observe.get()
-			return observe.traverse(cb, observe.get(), '', []);
+	observe.traverse = function(cb, path, item, depth) {
+		if (!path && _.isUndefined(item)) { // If we we're passed undefined assume the user wanted to just use observe.get()
+			return observe.traverse(cb, [], observe.get(), 0);
 		} else if (_.isArray(item)) {
-			item.forEach((v, k) => observe.traverse(cb, v, (path||[]).concat([k])));
+			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v), depth ? depth + 1 : 1);
 		} else if (_.isObject(item)) {
-			_.keys(item).forEach((k) => observe.traverse(cb, item[k], (path||[]).concat([k])));
+			console.log('INTO', _.keys(item));
+			_.keys(item).forEach((k) => observe.traverse(cb, (path||[]).concat([k]), item[k]), depth ? depth + 1 : 1);
 		} else {
 			cb(item, path ? path[path.length-1] : '', path||[]);
 		}

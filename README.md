@@ -87,9 +87,9 @@ Observable.get([path])
 Fetch the object being observed or a path within it.
 
 
-Observable.traverse([callback])
--------------------------------
-Run a callback on every item within the current object
+Observable.traverse([callback], [path])
+---------------------------------------
+Run a callback on every item within the current object.
 
 
 Observable.isModified([path])
@@ -119,6 +119,7 @@ The following events can be attached to any Observable instance:
 | `path`       | `(path, newValue)` | Emitted if any deeply nested paths change within the observable                                 |
 | `postChange` | `(newValue)`       | Emitted after all other keys have finished before the next injection stage                      |
 | `postInject` | `(newValue)`       | Emitted after the object has been 'sealed' again before the next check cycle                    |
+| `finally`    | `()`               | Emitted after all other hooks have been called                                                  |
 
 
 TODO
