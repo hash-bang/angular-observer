@@ -20,7 +20,7 @@ var $observe = function(scope, path, callback, params) {
 	// Import params {{{
 	if (_.isNumber(params)) params.deep = params;
 	if (_.isObject(params)) {
-		if (params.deep) {
+		if (_.has(params, 'deep')) {
 			if (!_.isNumber(params.deep) && params.deep !== true) throw new Error('Deep config option either should be a maximum depth number or boolean true');
 			observe.deep = params.deep;
 		}
