@@ -33,7 +33,8 @@ var $observe = function(scope, path, callback, params) {
 	* @return {mixed} The current watch item
 	*/
 	observe.get = function(path) {
-		return _.get(observe.scope, observe.path + (path ? _.isArray(path) ? '.' + path.join('.') : '.' + path : ''));
+		if (!path) return observe.scope;
+		return _.get(observe.scope, _.isArray(path) ? path.join('.') : path);
 	};
 
 
