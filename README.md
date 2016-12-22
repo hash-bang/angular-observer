@@ -173,8 +173,8 @@ TODO
 * [x] Deep watching  via `config.deep = true`
 * [x] Depth specifier via `$observe(scope, path, [callback], depth)`
 * [x] Depth specifier via `config.depth = Boolean | Number`
-* [ ] Paths can be arrays (for group support)
+* [x] Paths can be arrays (for group support)
 * [ ] Ignore paths array - `Observer.ignore(path...)`
-* [ ] Relative paths (defaults to true if only one path is being watched)
+* [x] Relative paths (defaults to true if only one path is being watched)
 * [ ] Path globbing
 * [ ] Old values in emitters

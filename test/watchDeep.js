@@ -11,7 +11,7 @@ describe('$observe - deep watching', function() {
 			},
 		};
 
-		var observer = $observe.deep(scope, 'foo')
+		var observer = $observe.deep(scope, 'foo', {root: false})
 			.on('change', v => expect(v).to.have.deep.property('foo.bar.baz', 'baz2'))
 			.on('path', (p, v) => {
 				expect(p).to.equal('foo.bar.baz');
@@ -35,7 +35,7 @@ describe('$observe - deep watching', function() {
 
 		var changedPaths = [];
 
-		var observer = $observe(scope, 'foo')
+		var observer = $observe(scope, 'foo', {root: false})
 			.on('path', (p, v) => changedPaths.push(p))
 			.on('finally', _=> {
 				expect(changedPaths).to.deep.equal(['foo.baz']);
@@ -59,7 +59,7 @@ describe('$observe - deep watching', function() {
 
 		var changedPaths = [];
 
-		var observer = $observe(scope, 'foo')
+		var observer = $observe(scope, 'foo', {root: false})
 			.on('change', v => {
 				expect(v).to.have.deep.property('foo.bar.baz', 'baz2');
 				expect(v).to.have.deep.property('foo.quz', 'quz');

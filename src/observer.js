@@ -7,6 +7,13 @@ var $observe = function(scope, paths, callback, params) {
 	observe.originalValues = {};
 	observe.deep = 1;
 
+	/**
+	* Whether the path returned in event emitters is relitive to something else within the scope
+	* If this is TRUE the root will be calculated from the path given (similar to how $scope.$watch works in angular), if false its disabled and if its a string it will be used as the relative path
+	* @var {boolean|string}
+	*/
+	observe.root = true;
+
 	// Argument juggling {{{
 	if (!scope) {
 		throw new Error('You must specify a scope to use');
@@ -24,6 +31,12 @@ var $observe = function(scope, paths, callback, params) {
 			if (!_.isNumber(params.deep) && params.deep !== true) throw new Error('Deep config option either should be a maximum depth number or boolean true');
 			observe.deep = params.deep;
 		}
+		if (_.has(params, 'root')) observe.root = params.root;
+	}
+	// }}}
+	// Calculate params.root if its in auto mode {{{
+	if (observe.root === true && observe.paths.length == 1) { // Auto compute the root if root==true and we only have one path anyway
+		observe.root = observe.paths[0];
 	}
 	// }}}
 
@@ -120,9 +133,10 @@ var $observe = function(scope, paths, callback, params) {
 		if (modified.length) observe.emit('change', observe.get());
 
 		modified.forEach(path => {
-			var pathSplit = path.split('.');
-			if (pathSplit.length == 1) observe.emit('key', pathSplit[0], observe.get(path));
-			observe.emit('path', path, observe.get(path));
+			var reportPath = observe.root && path.startsWith(observe.root) ? path.substr(observe.root.length + 1) : path; // Calculate the relatve path?
+			if (reportPath.indexOf('.') < 0) observe.emit('key', reportPath, observe.get(path));
+
+			observe.emit('path', reportPath, observe.get(path));
 		});
 
 		if (modified.length) observe.emit('postChange', observe.get());
