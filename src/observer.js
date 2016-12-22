@@ -152,13 +152,15 @@ var $observe = function(scope, path, callback, params) {
 
 		var args = Array.prototype.slice.call(arguments, 0);
 		var hook = args.shift();
+		var removeOnce = false;
 
 		observe.hooks[hook].forEach(hook => {
 			hook.cb.apply(observe, args);
-			if (hook.once) {
-				console.log('REMOVE HOOK AFTER ONCE!');
-			}
+			if (hook.once) removeOnce = true; // Mark that we need to filter by once hooks afterwards
 		});
+
+		// Remove all once==true hooks if we saw any
+		if (removeOnce) observe.hooks[hook] = observe.hooks[hook].filter(hook => !hook.once);
 
 		return observe;
 	};
