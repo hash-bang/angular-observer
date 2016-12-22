@@ -87,8 +87,8 @@ API
 The below API repersents the developer-facing functionality. For a full list of functions, methods and variables please read the source code JSDoc comments instead.
 
 
-$observe(scope, path)
----------------------
+$observe(scope, path, [callback], [config])
+-------------------------------------------
 The main Observer worker.
 Calling this function factory with a scope and a path will register an observer worker against it. Any changes will then fire events.
 
@@ -105,6 +105,15 @@ controller: function($observe) {
 See the [Events](#events) section for what events can be listened for.
 
 This returns an Observable.
+
+Callback is optional, if provided it will be automatically bound with `Observable.on('change', CALLBACK)`.
+
+Config is an optional object of options to configure $observe's behaviour. If `config` is a number it will be assumed that `{deep: CONFIG}` was specified.
+
+| Option | Type             | Default | Description                                                                                         |
+|--------|------------------|---------|-----------------------------------------------------------------------------------------------------|
+| `deep` | `true` OR Number | `1`     | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
+| `root` | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
 
 
 $observe.checkAll()
