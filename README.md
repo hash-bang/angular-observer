@@ -119,3 +119,17 @@ The following events can be attached to any Observable instance:
 | `path`       | `(path, newValue)` | Emitted if any deeply nested paths change within the observable                                 |
 | `postChange` | `(newValue)`       | Emitted after all other keys have finished before the next injection stage                      |
 | `postInject` | `(newValue)`       | Emitted after the object has been 'sealed' again before the next check cycle                    |
+
+
+TODO
+====
+
+* [ ] Emitters that can only fire once
+* [ ] Config parameter - `$observe(scope, path, config)`
+* [ ] Callbacks without events - `$observe([scope], path, callback)`
+* [ ] Deep watching  via `config.deep = true`
+* [ ] Depth specifier via `$observe(scope, path, [callback], depth)`
+* [ ] Depth specifier via `config.depth = Boolean | Number`
+* [ ] Paths can be arrays (for group support)
+* [ ] Backwards port fix - `$observe.collection(scope, path)`
+* [ ] Ignore paths array - `Observer.ignore(path...)`
