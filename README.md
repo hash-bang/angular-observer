@@ -182,6 +182,7 @@ The following events can be attached to any Observable instance:
 TODO
 ====
 
+* [ ] Object.defineProperty optimisations
 * [x] Emitters that can only fire once
 * [x] Config parameter - `$observe(scope, path, config)`
 * [x] Callbacks without events - `$observe([scope], path, callback)`
@@ -191,8 +192,13 @@ TODO
 * [x] Paths can be arrays (for group support)
 * [ ] Ignore paths array - `Observer.ignore(path...)`
 * [x] Relative paths (defaults to true if only one path is being watched)
-* [ ] Path globbing
-* [ ] Old values in emitters
+* [ ] Old values provided to emitters
 * [x] Observer destruction
+* [ ] Observer auto-destruction when no hooks remain
 * [ ] Observer pausing
-* [ ] Setting - ignore initial undefined
+* [ ] Ignore initial undefined
+* [ ] Inegration with this.$changes
+* [ ] Observer.set(PATH, value)
+* [ ] Observer.merge(object)
+* [ ] Path globbing
+* [ ] Multiple watchers on the same object but different paths
