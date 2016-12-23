@@ -11,10 +11,10 @@ describe('$observe - deep watching', function() {
 			},
 		};
 
-		var observer = $observe.deep(scope, 'foo', {root: false})
-			.on('change', v => expect(v).to.have.deep.property('foo.bar.baz', 'baz2'))
+		var observer = $observe.deep(scope, 'foo')
+			.on('change', v => expect(v).to.have.deep.property('bar.baz', 'baz2'))
 			.on('path', (p, v) => {
-				expect(p).to.equal('foo.bar.baz');
+				expect(p).to.equal('bar.baz');
 				expect(v).to.equal('baz2');
 			})
 			.on('finally', next)

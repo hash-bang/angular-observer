@@ -12,7 +12,7 @@ describe('$observe - arrays', function() {
 		var changes = [];
 
 		var observer = $observe(scope, 'arr')
-			.on('key', (k, v) => calledKeys[k] = true)
+			.on('path', (k, v) => calledKeys[k] = true)
 			.on('change', v => changes.push(_.cloneDeep(v)))
 
 		scope.arr[0] = 12;
@@ -31,11 +31,11 @@ describe('$observe - arrays', function() {
 			arr: [10, 23, 35],
 		};
 
-		var calledKeys = {};
+		var calledPaths = {};
 		var changes = [];
 
 		var observer = $observe(scope, 'arr')
-			.on('key', (k, v) => calledKeys[k] = true)
+			.on('path', (k, v) => calledPaths[k] = true)
 			.on('change', v => changes.push(_.cloneDeep(v)))
 
 		scope.arr.splice(2, 0, 27);
@@ -46,7 +46,7 @@ describe('$observe - arrays', function() {
 			[10, 23, 27, 35],
 			[10, 23, 27, 35, 47],
 		]);
-		expect(calledKeys).to.be.deep.equal({'': true, 2: true, 4: true});
+		expect(calledPaths).to.be.deep.equal({'': true, 2: true, 3: true, 4: true});
 	});
 
 	it('should detect array removals - pop, shift', function() {
@@ -58,7 +58,7 @@ describe('$observe - arrays', function() {
 		var changes = [];
 
 		var observer = $observe(scope, 'arr')
-			.on('key', (k, v) => calledKeys[k] = true)
+			.on('path', (k, v) => calledKeys[k] = true)
 			.on('change', v => changes.push(_.cloneDeep(v)))
 
 		scope.arr.pop();
