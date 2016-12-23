@@ -80,7 +80,7 @@ var $observe = function(scope, paths, callback, params) {
 
 	/**
 	* Walk every item in the tree running a callback on each
-	* @param {function} cb The callback to run. This is excuted with (value, key, path) where path is an array of all path segments of that item
+	* @param {function} cb The callback to run. This is executed with (value, key, path) where path is an array of all path segments of that item
 	* @param {array} [path] The specific path to examine relative to the scope
 	* @param {mixed} [item] A specific item to start at
 	* @param {number} [depth] The current depth of traversal (used to stop traversing when we're above observe.depth)
@@ -363,20 +363,34 @@ var $observe = function(scope, paths, callback, params) {
 		}
 		// }}}
 
-		var modified = observe.isModified();
-
 		// If method==setters AND observe.scanKeyChange==true we also need to check if any keys have been added or removed {{{
 		if (observe.method == 'setters' && observe.scanKeyChange) {
-			console.log('SCAN!');
-			observe.traverse(function(v, k, path) {
-				console.log('DEEP SCAN', path);
-				if (_.isObject(v)) {
-					console.log('CHK OBJ', path, _.keys(v));
-				}
-			});
-		}
-		// }}
+			var checkKeys = function(node, path) {
+				var needInject = false;
+				_.forEach(node, (v, k) => {
+					if (!_.isObject(node[k]) && !_.isUndefined(Object.getOwnPropertyDescriptor(node, k).value)) {
+						observe.setModified(path.concat([k]));
+						needInject = true;
+					}
+				});
+			};
 
+			_(observe.paths)
+				.map(path => path.split('.').slice(0, -1))
+				.uniq()
+				.forEach(parentPath => {
+					var parent = observe.get(parentPath);
+					checkKeys(parent, parentPath);
+					observe.traverse(function(v, k, path) {
+						var parentPath = path.slice(0, -1);
+						var parent = observe.get(parentPath);
+						if (_.isObject(parent)) checkKeys(parent, parentPath);
+					}, parentPath, parent, 0);
+				});
+		}
+		// }}}
+
+		var modified = observe.isModified();
 		if (modified.length) observe.emit('change', observe.get(observe.root || undefined));
 
 		modified.forEach(path => {
