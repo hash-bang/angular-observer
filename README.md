@@ -7,7 +7,13 @@ Features:
 * Watch an object hierarchically by path
 * Fully-featured event system - `emit(), on()`, `one()`, `once()`, `off()` are all supported
 * Self-destructing watchers - remove the watcher completely when no other hooks are present (works well with `once` / `one` event handlers to only capture one change then stop watching)
+* Ability to ignore initial variable states (see the `ignoreInitial` option)
 
+
+
+Examples
+--------
+### General use within an Angular component
 
 ```javascript
 angular
@@ -29,6 +35,30 @@ angular
 		},
 	});
 ```
+
+The examples below all assume that you are using `$observe` within a similar structure, the Component wrapping is omitted for brevity.
+
+
+### React to a change ONCE when everything has been set
+
+The following uses several techniques to only fire an observer once:
+
+```javascript
+$observe(this, ['path1', 'path2', 'path3'])
+	.once(function() {
+		// We only run this function if path1, path2 and path3 are not undefined!
+		// Since this is also inside a 'once' this observer will also self-destruct
+	})
+```
+
+Whats happening here:
+
+1. `$observe` is being passed multiple paths (similar to a `$scope.$watchGroup` in Angular)
+2. Since no parameters are passed all default parameters are used including `{ignoreInitial: 'any', selfDestruct: true}`
+3. As `ignoreInitial = 'any'` we ignore the initial undefined states of the paths until all are set
+4. Since we're using a `once()` call and `selfDestruct = true` we detect that no further hooks are waiting and destroy the watcher
+
+
 
 
 Installation
@@ -87,6 +117,10 @@ API
 ===
 The below API repersents the developer-facing functionality. For a full list of functions, methods and variables please read the source code JSDoc comments instead.
 
+General notes:
+
+* By default `$observe()` will ignore the initial undefined values (`ignoreInitial=any`) which differs from Angulars default behaviour of always triggering a `$scope.$watch` callback at least once. If you want this behaviour pass `{ignoreIntial: 'never'}` as a parameter.
+
 
 $observe(scope, path, [callback], [config])
 -------------------------------------------
@@ -114,6 +148,7 @@ Config is an optional object of options to configure $observe's behaviour. If `c
 | Option              | Type             | Default | Description                                                                                         |
 |---------------------|------------------|---------|-----------------------------------------------------------------------------------------------------|
 | `deep`              | `true` OR Number | `1`     | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
+| `ignoreInitial`     | String           | `"any"` | Ignore initial values (the first time a target is set). Values are: `"never"` / `false` - always trigger the change event even if any / all of the initial values are `undefined`, `"any"` - ignore the initial change detection if _any_ of the values watched are `undefined`, `"all"` - ignore initial change detection if _all_ of the values are `undefined` |
 | `root`              | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
 | `selfDestruct`      | Boolean          | `true`  | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
 | `selfDestructHooks` | Arrray           | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
@@ -180,6 +215,7 @@ The following events can be attached to any Observable instance:
 | `postChange` | `(newValue)`       | Emitted after all other keys have finished before the next injection stage                      |
 | `postInject` | `(newValue)`       | Emitted after the object has been 'sealed' again before the next check cycle                    |
 | `finally`    | `()`               | Emitted after all other hooks have been called                                                  |
+| `initial`    | `(newValue)`       | Emitted on the first change detection. Not if `ignoreInitial` is set this can fire multiple times as the Observer will assume any `undefined` value is still an initial value |
 
 
 TODO
@@ -197,9 +233,9 @@ TODO
 * [x] Relative paths (defaults to true if only one path is being watched)
 * [ ] Old values provided to emitters
 * [x] Observer destruction
-* [ ] Observer auto-destruction when no hooks remain
+* [x] Observer auto-destruction when no hooks remain
 * [ ] Observer pausing
-* [ ] Ignore initial undefined
+* [x] Ignore initial undefined
 * [ ] Inegration with this.$changes
 * [ ] Observer.set(PATH, value)
 * [ ] Observer.merge(object)
