@@ -54,9 +54,9 @@ $observe(this, ['path1', 'path2', 'path3'])
 Whats happening here:
 
 1. `$observe` is being passed multiple paths (similar to a `$scope.$watchGroup` in Angular)
-2. Since no parameters are passed all default parameters are used including `{ignoreInitial: 'any', selfDestruct: true}`
+2. Since no parameters are passed, default parameters are used including `{ignoreInitial: 'any', selfDestruct: true}`
 3. As `ignoreInitial = 'any'` we ignore the initial undefined states of the paths until all are set
-4. Since we're using a `once()` call and `selfDestruct = true` we detect that no further hooks are waiting and destroy the watcher
+4. As a `once()` hook is being used and `selfDestruct = true` we detect that no further hooks are waiting and destroy the watcher automatically
 
 
 
@@ -65,7 +65,7 @@ Installation
 ============
 1. Add `angular-observer` as a module in your main `angular.module()` call.
 2. Include the service somewhere in your project by either loading the `angular-observer.js` file or rolling into your minifier / webpack / concat process of choice.
-3. Add `$observe` as a depdenency to any controller you wish to use it in.
+3. Add `$observe` as a dependency to any controller you wish to use it in.
 
 
 For a more complex example see the [demo](demo/) directory.
@@ -73,9 +73,9 @@ For a more complex example see the [demo](demo/) directory.
 
 Migration
 =========
-The `$observe()` call is compatible with Angulars `$watch()`, `$watchGroup()` and `$watchCollection()` with minimal changes.
+The `$observe()` call is compatible with Angular's `$watch()`, `$watchGroup()` and `$watchCollection()` with a few small changes.
 
-Since `$observe()` can mix-and-match these approches it is also possible that we can support hybrid observers such as deep, multi-collection watching.
+A `$observe()` can mix-and-match several approaches support is possible for hybrid observers such as combining deep, multi-collection watching where we can ignore the initial unset state.
 
 
 $scope.$watch(path | func, callback)
@@ -88,7 +88,7 @@ You can use any of the following patterns:
 
 $scope.$watch(path | func, callback, true)
 ------------------------------------------
-Deep watching can be acomplished with any of the following:
+Deep watching can be accomplished with any of the following:
 
 * `$observe(this, path, callback, true)`
 * `$observe(this, path, {deep: true}).on('change', callback)`
@@ -103,7 +103,7 @@ Path can already be an array in a $observe call so any of the usage patterns ava
 
 $scope.$watchCollection(path | func, callback)
 ----------------------------------------------
-Watching a collection with `$observe()` is essencially just specifying that the `depth = 2` (watch only the immediate array indexes AND the keys of the sub-object).
+Watching a collection with `$observe()` is essentially just specifying that the `depth = 2` (watch only the immediate array indexes AND the keys of the sub-object).
 
 Any of the following patterns should work:
 
@@ -115,15 +115,15 @@ Any of the following patterns should work:
 
 API
 ===
-The below API repersents the developer-facing functionality. For a full list of functions, methods and variables please read the source code JSDoc comments instead.
+The below API represents the developer-facing functionality. For a full list of functions, methods and variables please read the source code JSDoc comments instead.
 
 General notes:
 
-* By default `$observe()` will ignore the initial undefined values (`ignoreInitial=any`) which differs from Angulars default behaviour of always triggering a `$scope.$watch` callback at least once. If you want this behaviour pass `{ignoreIntial: 'never'}` as a parameter.
+* By default `$observe()` will ignore the initial undefined values (`ignoreInitial=any`) which differs from Angular's default behaviour of always triggering a `$scope.$watch` callback at least once. If you want this behaviour pass `{ignoreIntial: 'never'}` as a parameter.
 
 
-$observe(scope, path, [callback], [config])
--------------------------------------------
+$observe(scope, path, [callback], [config | depth])
+---------------------------------------------------
 The main Observer worker.
 Calling this function factory with a scope and a path will register an observer worker against it. Any changes will then fire events.
 
@@ -151,7 +151,12 @@ Config is an optional object of options to configure $observe's behaviour. If `c
 | `ignoreInitial`     | String           | `"any"` | Ignore initial values (the first time a target is set). Values are: `"never"` / `false` - always trigger the change event even if any / all of the initial values are `undefined`, `"any"` - ignore the initial change detection if _any_ of the values watched are `undefined`, `"all"` - ignore initial change detection if _all_ of the values are `undefined` |
 | `root`              | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
 | `selfDestruct`      | Boolean          | `true`  | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
-| `selfDestructHooks` | Arrray           | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
+| `selfDestructHooks` | Array            | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
+
+
+$observe.deep(scope, path, [callback], [config | depth])
+--------------------------------------------------------
+A convenience function to call `$observe` with `{deep: true}` set as a config parameter.
 
 
 $observe.checkAll()
@@ -178,7 +183,7 @@ Fetch the object being observed or a path within it.
 
 Observable.destroy()
 --------------------
-Destroy the observer and deregister it with `$observeProvider` so it no longer receieves updates.
+Destroy the observer and deregister it with `$observeProvider` so it no longer receives updates.
 
 
 Observable.isModified([path])
@@ -194,17 +199,17 @@ Run a callback on every item within the current object.
 
 $observeProvider
 ----------------
-The overseeing observer system. This also allows management of any registered observer processes.
+The overseeing observer system (Angular only). This also allows management of any registered observer processes.
 
 
 $observeProvider.checkAll()
 -----------------------------------
-Run `check()` on all registed `$observe` objects. This is also accessable as `$observe.checkAll()`.
+Run `check()` on all registered `$observe` objects. This is also accessible as `$observe.checkAll()`.
 
 
 Events
 ------
-The following events can be attached to any Observable instance:
+The following events can be attached to any Observable instance via `on`, `one` / `once` and can be removed with `off`.
 
 | Event        | Parameters         | Description                                                                                     |
 |--------------|--------------------|-------------------------------------------------------------------------------------------------|
@@ -236,7 +241,7 @@ TODO
 * [x] Observer auto-destruction when no hooks remain
 * [ ] Observer pausing
 * [x] Ignore initial undefined
-* [ ] Inegration with this.$changes
+* [ ] Integration with this.$changes
 * [ ] Observer.set(PATH, value)
 * [ ] Observer.merge(object)
 * [ ] Path globbing
