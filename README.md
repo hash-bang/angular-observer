@@ -158,6 +158,7 @@ Config is an optional object of options to configure `$observe`'s behaviour. If 
 | `scanKeyChange`     | Boolean          | `true`    | Scan for key additions / deletions. There is a **major** performance boost to disabling this but it renders `$observe()` unable to detect any changes to existing objects. It is highly recommended you enable this if you have a relatively static data set or your data set is being brought from a remote database with all the keys mapped (Angular-Resource for example) |
 | `selfDestruct`      | Boolean          | `true`    | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
 | `selfDestructHooks` | Array            | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
+| `seperator`         | String           | `.`       | The path definition seperator. Change this to forward slashes or something if you want to integrate with a globbing library |
 
 
 $observe.deep(scope, path, [callback], [config | depth])

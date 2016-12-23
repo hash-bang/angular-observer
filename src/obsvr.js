@@ -14,6 +14,7 @@ var $observe = function(scope, paths, callback, params) {
 	observe.method = 'setters'; // ENUM: 'dirty', 'setters',
 	observe.scanKeyChange = true;
 	observe.hookWarnings = true;
+	observe.seperator = '.';
 
 	/**
 	* Whether the path returned in event emitters is relitive to something else within the scope
@@ -51,12 +52,17 @@ var $observe = function(scope, paths, callback, params) {
 			if (params.ignoreInitial !== false && !_.isString(params.ignoreInitial) && !_.includes(['once', 'any', 'all'])) throw new Error('ignoreInitial must be "never", "any", "all" or boolean false');
 			observe.ignoreInitial = params.ignoreInitial;
 		}
+		// Simple strings
+		['seperator'].forEach(k => {
+			if (_.isUndefined(params[k])) return;
+			if (!_.isString(params[k])) throw new Error(k + ' must be a string');
+			observe[k] = params[k];
+		});
 		// Booleans
 		['selfDestruct', 'scanKeyChange', 'hookWarnings'].forEach(k => {
-			if (!_.isUndefined(params[k])) {
-				if (!_.isBoolean(params[k])) throw new Error(k + ' must be a boolean');
-				observe[k] = params[k];
-			}
+			if (_.isUndefined(params[k])) return;
+			if (!_.isBoolean(params[k])) throw new Error(k + ' must be a boolean');
+			observe[k] = params[k];
 		});
 	}
 	// }}}
@@ -74,7 +80,7 @@ var $observe = function(scope, paths, callback, params) {
 	*/
 	observe.get = function(path) {
 		if (!path || !path.length) return observe.scope;
-		return _.get(observe.scope, _.isArray(path) ? path.join('.') : path);
+		return _.get(observe.scope, _.isArray(path) ? path.join(observe.seperator) : path);
 	};
 
 
@@ -87,7 +93,7 @@ var $observe = function(scope, paths, callback, params) {
 	*/
 	observe.traverse = function(cb, path, item, depth) {
 		if (!path && _.isUndefined(item)) { // If we we're passed undefined assume the user wanted to traverse all specified paths
-			observe.paths.forEach(path => observe.traverse(cb, path.split('.'), observe.get(path), 1));
+			observe.paths.forEach(path => observe.traverse(cb, path.split(observe.seperator), observe.get(path), 1));
 		} else if (_.isArray(item)) {
 			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
 			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v, depth ? depth + 1 : 1));
@@ -131,7 +137,7 @@ var $observe = function(scope, paths, callback, params) {
 					value: true,
 				});
 			} else if (!_.isPlainObject(v)) { // For everything else - stash the original value in this.parent.$originalValues
-				observe.originalValues[path.join('.')] = v;
+				observe.originalValues[path.join(observe.seperator)] = v;
 			}
 		});
 	};
@@ -147,7 +153,7 @@ var $observe = function(scope, paths, callback, params) {
 	observe._injectSetters = function(obj, path, depth) {
 		if (!obj) { // No object given - scope over paths to figure out their parents and inject those
 			_(observe.paths)
-				.map(path => path.split('.').slice(0, -1))
+				.map(path => path.split(observe.seperator).slice(0, -1))
 				.uniq()
 				.forEach(parentPath => {
 					var child = observe.get(parentPath);
@@ -283,7 +289,7 @@ var $observe = function(scope, paths, callback, params) {
 	* @return {Object} This chainable object
 	*/
 	observe.setModified = function(path) {
-		observe.markedModified[_.isArray(path) ? path.join('.') : path] = true;
+		observe.markedModified[_.isArray(path) ? path.join(observe.seperator) : path] = true;
 		return observe;
 	}
 
@@ -308,14 +314,14 @@ var $observe = function(scope, paths, callback, params) {
 			if (_.isObject(v)) { // If its an object (or an array) examine the $clean propertly
 				return !v.$clean;
 			} else { // If its everything else look at the original value we have on file
-				return observe.originalValues[_.isArray(path) ? path.join('.') : path] != v;
+				return observe.originalValues[_.isArray(path) ? path.join(observe.seperator) : path] != v;
 			}
 		} else if (observe.method == 'setters') { // Use only the markedModified list
 			return _.map(observe.markedModified, (v, p) => p)
 		} else {
 			var modified = _.map(observe.markedModified, (v, p) => p)
 			observe.traverse(function(v, key, path) {
-				if (observe.isModified(path)) modified.push(path.join('.'));
+				if (observe.isModified(path)) modified.push(path.join(observe.seperator));
 			});
 			return modified;
 		}
@@ -376,7 +382,7 @@ var $observe = function(scope, paths, callback, params) {
 			};
 
 			_(observe.paths)
-				.map(path => path.split('.').slice(0, -1))
+				.map(path => path.split(observe.seperator).slice(0, -1))
 				.uniq()
 				.forEach(parentPath => {
 					var parent = observe.get(parentPath);
@@ -395,7 +401,7 @@ var $observe = function(scope, paths, callback, params) {
 
 		modified.forEach(path => {
 			var reportPath = observe.root && path.startsWith(observe.root) ? path.substr(observe.root.length + 1) : path; // Calculate the relatve path?
-			if (reportPath.indexOf('.') < 0) observe.emit('key', reportPath, observe.get(path));
+			if (reportPath.indexOf(observe.seperator) < 0) observe.emit('key', reportPath, observe.get(path));
 
 			observe.emit('path', reportPath, observe.get(path));
 		});
