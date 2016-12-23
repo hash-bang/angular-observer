@@ -8,6 +8,7 @@ Features:
 * Fully-featured event system - `emit(), on()`, `one()`, `once()`, `off()` are all supported
 * Self-destructing watchers - remove the watcher completely when no other hooks are present (works well with `once` / `one` event handlers to only capture one change then stop watching)
 * Ability to ignore initial variable states (see the `ignoreInitial` option)
+* Blazingly fast - by default (change by setting `method`) the data object is mutated into setters/getters where each data change is detected in a function and recorded. *No deep object traversal is performed* - state changes detection is done exclusively via callbacks. For more optimizations see the `scanKeyChange` property.
 
 
 
@@ -145,12 +146,15 @@ Callback is optional, if provided it will be automatically bound with `Observabl
 
 Config is an optional object of options to configure $observe's behaviour. If `config` is a number it will be assumed that `{deep: CONFIG}` was specified.
 
-| Option              | Type             | Default | Description                                                                                         |
-|---------------------|------------------|---------|-----------------------------------------------------------------------------------------------------|
-| `deep`              | `true` OR Number | `1`     | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
-| `ignoreInitial`     | String           | `"any"` | Ignore initial values (the first time a target is set). Values are: `"never"` / `false` - always trigger the change event even if any / all of the initial values are `undefined`, `"any"` - ignore the initial change detection if _any_ of the values watched are `undefined`, `"all"` - ignore initial change detection if _all_ of the values are `undefined` |
-| `root`              | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
-| `selfDestruct`      | Boolean          | `true`  | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
+| Option              | Type             | Default   | Description                                                                                         |
+|---------------------|------------------|-----------|-----------------------------------------------------------------------------------------------------|
+| `deep`              | `true` OR Number | `1`       | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
+| `hookWarnings`      | Boolean          | `true`    | When enabled extra checks are preformed for common hook name misspellings                           |
+| `ignoreInitial`     | String           | `"any"`   | Ignore initial values (the first time a target is set). Values are: `"never"` / `false` - always trigger the change event even if any / all of the initial values are `undefined`, `"any"` - ignore the initial change detection if _any_ of the values watched are `undefined`, `"all"` - ignore initial change detection if _all_ of the values are `undefined` |
+| `method`            | String           | `setters` | The method used to watch the object. Can be one of: `dirty` - use dirty checking, very slow but accurate, `setters` - inject getters/setters to every primitive very fast but cannot property detect key additions / deletions (see `scanKeyChange` for this) |
+| `root`              | `true` OR String | `true`    | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
+| `scanKeyChange`     | Boolean          | `true`    | Scan for key additions / deletions. There is a **major** performance boost to disabling this but it renders `$observe()` unable to detect any changes to existing objects. It is highly recommended you enable this if you have a relatively static data set or your data set is being brought from a remote database with all the keys mapped (Angular-Resource for example) |
+| `selfDestruct`      | Boolean          | `true`    | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
 | `selfDestructHooks` | Array            | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
 
 
@@ -226,7 +230,7 @@ The following events can be attached to any Observable instance via `on`, `one` 
 TODO
 ====
 
-* [ ] Object.defineProperty optimisations
+* [x] Object.defineProperty optimisations
 * [x] Emitters that can only fire once
 * [x] Config parameter - `$observe(scope, path, config)`
 * [x] Callbacks without events - `$observe([scope], path, callback)`
