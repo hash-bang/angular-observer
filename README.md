@@ -9,7 +9,12 @@ Features:
 * Self-destructing watchers - remove the watcher completely when no other hooks are present (works well with `once` / `one` event handlers to only capture one change then stop watching)
 * Ability to ignore initial variable states (see the `ignoreInitial` option)
 * Blazingly fast - by default (change by setting `method`) the data object is mutated into setters/getters where each data change is detected in a function and recorded. *No deep object traversal is performed* - state changes detection is done exclusively via callbacks. For more optimizations see the `scanKeyChange` property.
+* Configurable path seperator - integrate with globbing libraries or regular expressions easier by changing dotted notation (e.g. `foo.bar.baz`) to something else
 
+
+**NOTE**: This project is primarily designed for integration into Angular but works perfectly well within Node as per the [test suite](test/).
+
+For a more complex example of this libraries capabilies see the [demo](demo/) directory for a fully working Angular integration.
 
 
 Examples
@@ -67,9 +72,6 @@ Installation within Angular
 1. Add `angular-obsvr` as a module in your main `angular.module()` call.
 2. Include the service somewhere in your project by either loading the `dist/angular-obsvr.js` file or rolling into your minifier / webpack / concat process of choice.
 3. Add `$observe` as a dependency to any controller you wish to use it in.
-
-
-For a more complex example see the [demo](demo/) directory.
 
 
 Migration
@@ -144,7 +146,7 @@ This returns an Observable.
 
 Callback is optional, if provided it will be automatically bound with `Observable.on('change', CALLBACK)`.
 
-Config is an optional object of options to configure $observe's behaviour. If `config` is a number it will be assumed that `{deep: CONFIG}` was specified.
+Config is an optional object of options to configure `$observe`'s behaviour. If `config` is a number it will be assumed that `{deep: CONFIG}` was specified.
 
 | Option              | Type             | Default   | Description                                                                                         |
 |---------------------|------------------|-----------|-----------------------------------------------------------------------------------------------------|
