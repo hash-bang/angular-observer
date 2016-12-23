@@ -17,7 +17,7 @@ describe('$observe - objects', function() {
 				expect(v).to.be.equal('val2');
 			})
 			.on('path', (p, v) => expect(p).to.be.equal('key'))
-			.on('change', v => expect(v).to.have.deep.property('obj.key', 'val2'))
+			.on('change', v => expect(v).to.deep.equal({key: 'val2'}))
 
 		scope.obj.key = 'val2';
 		observer.check();

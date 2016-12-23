@@ -11,6 +11,10 @@ var $observe = function(scope, paths, callback, params) {
 	observe.isDestoyed = false;
 	observe.ignoreInitial = 'any'; // ENUM: false (never ignore), 'any' (ignore if any of the paths are undefined), 'all' (ignore only if all of the paths are undefined)
 	observe.isInitial = true;
+	observe.method = 'setters'; // ENUM: 'dirty', 'setters',
+	observe.scanKeyChange = true;
+	observe.emitImmediate = false;
+	observe.hookWarnings = true;
 
 	/**
 	* Whether the path returned in event emitters is relitive to something else within the scope
@@ -67,7 +71,7 @@ var $observe = function(scope, paths, callback, params) {
 	* @return {mixed} The current watch item
 	*/
 	observe.get = function(path) {
-		if (!path) return observe.scope;
+		if (!path || !path.length) return observe.scope;
 		return _.get(observe.scope, _.isArray(path) ? path.join('.') : path);
 	};
 
@@ -94,11 +98,28 @@ var $observe = function(scope, paths, callback, params) {
 	};
 
 
+	// Injection {{{
 	/**
 	* Inject methods into the object to track for changes
 	* @return {Object} This chainable object
 	*/
 	observe.inject = function() {
+		if (observe.method == 'dirty') {
+			observe._injectDirty();
+		} else if (observe.method == 'setters') {
+			observe._injectSetters();
+		}
+
+		return observe;
+	};
+
+
+	/**
+	* Inject dirty checking into the object
+	* This is used if observe.method=='dirty'
+	* @access private
+	*/
+	observe._injectDirty = function() {
 		observe.originalValues = {};
 		observe.traverse(function(v, k, path) {
 			// If its an object (or array) glue the `$clean` property to it to detect writes
@@ -111,9 +132,168 @@ var $observe = function(scope, paths, callback, params) {
 				observe.originalValues[path.join('.')] = v;
 			}
 		});
-		return observe;
 	};
 
+
+	/**
+	* Inject setter checking into the object
+	* @param {Object} [obj] The object to inject into. This will be mutated. If omitted the parent of each path will be used
+	* @param {array} [path] Path relative to the root for this injection. For internal use.
+	* @param {number} [depth=0] The current depth (used to stop traversel when we go above Observer.deep)
+	* @return {Object} The injected properties
+	*/
+	observe._injectSetters = function(obj, path, depth) {
+		if (!obj) { // No object given - scope over paths to figure out their parents and inject those
+			_(observe.paths)
+				.map(path => path.split('.').slice(0, -1))
+				.uniq()
+				.forEach(parentPath => {
+					var child = observe.get(parentPath);
+					observe._injectSetters(child, parentPath, 0);
+				});
+			return;
+		} else if (_.isNumber(observe.deep) && depth > observe.deep) {
+			return; // Refuse to go any deeper
+		}
+
+		var isArray = _.isArray(obj);
+		if (!path) path = [];
+
+		var inject = _(obj) // Object of defineProperties structure we are going to inject into this object
+			.mapValues(function(v, k) {
+				var nodePath = path.concat([k]);
+				var nodeValue = v;
+				if (_.isObject(v)) {
+					observe._injectSetters(v, nodePath, (depth||0) + 1);
+				} else { // Assume its a scalar
+					return {
+						enumerable: true,
+						configurable: true,
+						get: ()=> nodeValue,
+						set: function(v) {
+							observe.setModified(nodePath);
+
+							nodeValue = v;
+							if (_.isObject(v)) observe._injectSetters(v, nodePath, (depth||0) + 1);
+						},
+					};
+				}
+			})
+			.pickBy(v => !!v) // Remove all undefined items (because they got injected seperately) or things we dont want to deal with anyway
+			.value()
+
+		if (isArray) {
+			inject.isArray = {
+				enumerable: false,
+				value: true,
+			};
+
+			inject.shift = {
+				replacePrototype: true,
+				enumerable: false,
+				value: function() {
+					var output = Array.prototype.shift.apply(this, arguments);
+					observe._injectSetters(this, path, (depth||0) + 1);
+					observe.setModified(path.concat([0]));
+					return output;
+				},
+			};
+
+			inject.push = {
+				replacePrototype: true,
+				enumerable: false,
+				value: function() {
+					var output = Array.prototype.push.apply(this, arguments);
+					observe._injectSetters(this, path, (depth||0) + 1);
+					observe.setModified(path.concat([this.length-1]));
+					return output;
+				},
+			};
+
+			['fill', 'pop', 'reverse', 'sort', 'splice', 'unshift'].forEach(method => {
+				inject[method] = {
+					replacePrototype: true,
+					enumerable: false,
+					value: function() {
+						observe.setModified(path);
+						var output = Array.prototype[method].apply(this, arguments);
+						_.forEach(this, (c, i) => observe._injectSetters(this, path, (depth||0) + 1)); // Inject into all children
+						return output;
+					},
+				};
+			})
+		}
+
+		inject.toObject = {
+			replacePrototype: true,
+			enumerable: false,
+			value: function() {
+				return _.mapValues(this, v => {
+					if (_.isObject(v) && _.hasIn(v, 'isArray') && v.isArray) {
+						return _.map(v.toObject(), (v, k) => v);
+					} else if (_.isObject(v) && _.hasIn(v, 'toObject')) {
+						return v.toObject();
+					} else {
+						return v;
+					}
+				});
+			},
+		};
+
+		inject.toString = {
+			replacePrototype: true,
+			enumerable: false,
+			value: function() {
+				debugger;
+				return 'Hello Angular';
+			},
+		};
+
+		inject.$obsvr = {
+			enumerable: false,
+			value: true,
+		};
+
+		// Attempt to inject all the composed properties {{{
+		inject = _.pickBy(inject, (dp, k) => (
+			!dp.replacePrototype ||
+			!('$obsvr' in obj)
+		));
+
+		Object.defineProperties(obj, inject);
+		// }}}
+
+		return inject;
+	};
+	// }}}
+
+	/**
+	* Cache of paths marked as modified
+	* This is stored as an object so each path can exist within the list only once
+	* @var {Object}
+	*/
+	observe.markedModified = {};
+
+
+	/**
+	* Mark a path as modified
+	* @param {string|array} path The path to mark as modified relative to the scope
+	* @return {Object} This chainable object
+	*/
+	observe.setModified = function(path) {
+		observe.markedModified[_.isArray(path) ? path.join('.') : path] = true;
+		return observe;
+	}
+
+
+	/**
+	* Clear all paths marked as modified
+	* @return {Object} This chainable object
+	*/
+	observe.clearModified = function() {
+		observe.markedModified = {};
+		return observe;
+	};
 
 	/**
 	* Check if a path or the entire object is modified
@@ -128,8 +308,10 @@ var $observe = function(scope, paths, callback, params) {
 			} else { // If its everything else look at the original value we have on file
 				return observe.originalValues[_.isArray(path) ? path.join('.') : path] != v;
 			}
+		} else if (observe.method == 'setters') { // Use only the markedModified list
+			return _.map(observe.markedModified, (v, p) => p)
 		} else {
-			var modified = [];
+			var modified = _.map(observe.markedModified, (v, p) => p)
 			observe.traverse(function(v, key, path) {
 				if (observe.isModified(path)) modified.push(path.join('.'));
 			});
@@ -151,7 +333,7 @@ var $observe = function(scope, paths, callback, params) {
 	observe.check = function() {
 		if (observe.isDestroyed) throw new Error('observer has been destroyed');
 
-		// Work out whether to initiall ignore the check cycle {{{
+		// Work out whether to ignore the check cycle {{{
 		if (observe.isInitial) {
 			switch (observe.ignoreInitial) {
 				case false:
@@ -180,7 +362,20 @@ var $observe = function(scope, paths, callback, params) {
 		// }}}
 
 		var modified = observe.isModified();
-		if (modified.length) observe.emit('change', observe.get());
+
+		// If method==setters AND observe.scanKeyChange==true we also need to check if any keys have been added or removed {{{
+		if (observe.method == 'setters' && observe.scanKeyChange) {
+			console.log('SCAN!');
+			observe.traverse(function(v, k, path) {
+				console.log('DEEP SCAN', path);
+				if (_.isObject(v)) {
+					console.log('CHK OBJ', path, _.keys(v));
+				}
+			});
+		}
+		// }}
+
+		if (modified.length) observe.emit('change', observe.get(observe.root || undefined));
 
 		modified.forEach(path => {
 			var reportPath = observe.root && path.startsWith(observe.root) ? path.substr(observe.root.length + 1) : path; // Calculate the relatve path?
@@ -188,6 +383,8 @@ var $observe = function(scope, paths, callback, params) {
 
 			observe.emit('path', reportPath, observe.get(path));
 		});
+
+		observe.clearModified();
 
 		if (modified.length) observe.emit('postChange', observe.get());
 
@@ -206,6 +403,7 @@ var $observe = function(scope, paths, callback, params) {
 
 	// Events / Hooks {{{
 	observe.hooks = {}; // Each key is a hook, each value an array of hook registers. Each register is of type {[id], cb, [once=false]}
+
 
 	/**
 	* Fire a given hook
@@ -243,6 +441,11 @@ var $observe = function(scope, paths, callback, params) {
 	* @return {Object} This chainable object
 	*/
 	observe.on = function(hook, cb, params) {
+		if (observe.hookWarnings && hook == 'changes') {
+			console.warn('Call to Observer.on(\'changes\') but that should be non-plural. Replacing with "change" for now but you should also change your source code');
+			hook = 'change';
+		}
+
 		// Never seen this type of hook before
 		if (!observe.hooks[hook]) observe.hooks[hook] = [];
 

@@ -14,7 +14,7 @@ describe('$observe - destruction', function() {
 				if (isDestroyed) {
 					expect.fail();
 				} else {
-					expect(v).to.have.property('str', 'string2');
+					expect(v).to.equal('string2');
 					this.destroy(); // Destory ourselves after the change
 				}
 			})
@@ -34,7 +34,7 @@ describe('$observe - destruction', function() {
 		};
 
 		var observer = $observe(scope, 'str')
-			.once('change', v => expect(v).to.have.property('str', 'string2'))
+			.once('change', v => expect(v).to.equal('string2'))
 			.on('destroy', method => {
 				expect(method).to.equal('selfDestruct');
 				next();
@@ -50,7 +50,7 @@ describe('$observe - destruction', function() {
 		};
 
 		var observer = $observe(scope, 'str', {selfDestruct: false})
-			.once('change', v => expect(v).to.have.property('str', 'string2'))
+			.once('change', v => expect(v).to.equal('string2'))
 			.on('destroy', method => expect.fail())
 			.on('finally', _=> next())
 

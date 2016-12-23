@@ -10,7 +10,7 @@ describe('$observe - scalars', function() {
 
 		var observer = $observe(scope, 'str')
 			.on('path', (p, v) => expect(p).to.be.equal(''))
-			.on('change', v => expect(v).to.have.property('str', 'string2'))
+			.on('change', v => expect(v).to.equal('string2'))
 
 		scope.str = 'string2';
 		observer.check();
