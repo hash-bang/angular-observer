@@ -13,7 +13,6 @@ var $observe = function(scope, paths, callback, params) {
 	observe.isInitial = true;
 	observe.method = 'setters'; // ENUM: 'dirty', 'setters',
 	observe.scanKeyChange = true;
-	observe.emitImmediate = false;
 	observe.hookWarnings = true;
 
 	/**
@@ -44,10 +43,6 @@ var $observe = function(scope, paths, callback, params) {
 			if (observe.root !== true && !_.isNumber(observe.root)) throw new Error('Root must be boolean true or a number');
 			observe.root = params.root;
 		}
-		if (_.has(params, 'selfDestruct')) {
-			if (!_.isBoolean(params.selfDestruct)) throw new Error('selfDestruct must be a boolean');
-			observe.selfDestruct = params.selfDestruct;
-		}
 		if (_.has(params, 'selfDestructHooks')) {
 			if (!_.isArray(params.selfDestructHooks)) throw new Error('selfDestructHooks must be an array');
 			observe.selfDestructHooks = params.selfDestructHooks;
@@ -56,6 +51,13 @@ var $observe = function(scope, paths, callback, params) {
 			if (params.ignoreInitial !== false && !_.isString(params.ignoreInitial) && !_.includes(['once', 'any', 'all'])) throw new Error('ignoreInitial must be "never", "any", "all" or boolean false');
 			observe.ignoreInitial = params.ignoreInitial;
 		}
+		// Booleans
+		['selfDestruct', 'scanKeyChange', 'hookWarnings'].forEach(k => {
+			if (!_.isUndefined(params[k])) {
+				if (!_.isBoolean(params[k])) throw new Error(k + ' must be a boolean');
+				observe[k] = params[k];
+			}
+		});
 	}
 	// }}}
 	// Calculate params.root if its in auto mode {{{
