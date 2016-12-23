@@ -23,7 +23,7 @@ describe('$observe - deep watching', function() {
 		observer.check();
 	});
 
-	it('should only watch the top layer (deep=1)', function(next) {
+	it('should only watch the top layer (deep=1)', function() {
 		var scope = {
 			foo: {
 				bar: {
@@ -37,42 +37,42 @@ describe('$observe - deep watching', function() {
 
 		var observer = $observe(scope, 'foo', {root: false})
 			.on('path', (p, v) => changedPaths.push(p))
-			.on('finally', _=> {
-				expect(changedPaths).to.deep.equal(['foo.baz']);
-				next();
-			});
 
 		scope.foo.baz = 'baz2';
 		scope.foo.bar.baz = 'baz2';
 		observer.check();
+		expect(changedPaths).to.deep.equal(['foo.baz']);
 	});
 
-	it('should only watch the second to top layer (deep=2)', function(next) {
+	it('should only watch the second to top layer (deep=2)', function() {
 		var scope = {
 			foo: {
 				bar: {
-					baz: 'baz',
+					foo: 'fooBarFoo',
+					baz: {
+						quz: 'fooBarBazQuz',
+					},
 				},
 				baz: 'baz',
+				quz: 'quz',
 			},
 		};
 
 		var changedPaths = [];
 
-		var observer = $observe(scope, 'foo', {root: false})
+		var observer = $observe(scope, 'foo', {deep: 2})
 			.on('change', v => {
-				expect(v).to.have.deep.property('foo.bar.baz', 'baz2');
-				expect(v).to.have.deep.property('foo.quz', 'quz');
+				expect(v).to.have.deep.property('bar.foo', 'fooBarFoo2');
+				expect(v).to.have.deep.property('bar.baz.quz', 'fooBarBazQuz2');
+				expect(v).to.have.deep.property('quz', 'quz2');
 			})
 			.on('path', (p, v) => changedPaths.push(p))
-			.on('finally', _=> {
-				expect(changedPaths).to.deep.equal(['foo.baz', 'foo.quz']);
-				next();
-			});
 
 		scope.foo.baz = 'baz2';
-		scope.foo.quz = 'quz';
-		scope.foo.bar.baz = 'baz2';
+		scope.foo.quz = 'quz2';
+		scope.foo.bar.foo = 'fooBarFoo2';
+		scope.foo.bar.baz.quz = 'fooBarBazQuz2';
 		observer.check();
+		expect(changedPaths).to.deep.equal(['baz', 'quz', 'bar.foo']);
 	});
 });
