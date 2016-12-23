@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var $observe = require('../src/observer');
+var $observe = require('../src/obsvr');
 
 describe('$observe - deep watching', function() {
 	it('should watch a deep object change', function(next) {

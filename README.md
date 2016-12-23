@@ -1,6 +1,6 @@
-Angular-Observer
-================
-Observe mutations to a scalar, object or array.
+Obsvr
+=====
+Swiss-army knife for observation of objects (Angular compatible).
 
 Features:
 

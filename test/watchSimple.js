@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var $observe = require('../src/observer');
+var $observe = require('../src/obsvr');
 
 describe('$observe - simple cases', function() {
 	it('should watch a string change', function(next) {

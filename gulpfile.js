@@ -9,9 +9,9 @@ var uglify = require('gulp-uglify');
 gulp.task('default', ['build']);
 
 gulp.task('build', function () {
-	gulp.src('./src/angular-observer.js')
-		.pipe(rename('angular-observer.js'))
-		.pipe(replace(/\/\/ INCLUDE src\/observer\.js \/\//, fs.readFileSync('./src/observer.js', 'utf-8')))
+	gulp.src('./src/angular-obsvr.js')
+		.pipe(rename('angular-obsvr.js'))
+		.pipe(replace(/\/\/ INCLUDE src\/obsvr\.js \/\//, fs.readFileSync('./src/obsvr.js', 'utf-8')))
 		.pipe(replace(/^.*require\(.*\);\s+$/gm, ''))
 		.pipe(replace(/^.*module\.exports = .*$/gm, ''))
 		.pipe(replace(/setTimeout\(/, '$timeout('))

@@ -1,8 +1,8 @@
 {
-  "name": "angular-observer",
+  "name": "obsvr",
   "version": "0.0.1",
-  "description": "Observe mutations to a scalar, object or array in Angular",
-  "main": "src/observer.js",
+  "description": "Swiss-army knife for observation of objects (Angular compatible)",
+  "main": "src/obsvr.js",
   "scripts": {
     "deploy": "node demo/server.js"
   },

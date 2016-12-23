@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var $observe = require('../src/observer');
+var $observe = require('../src/obsvr');
 
 describe('$observe - initial ignore', function() {
 	it('should ignore the initial undefined state (one item, ignoreInitial=any)', function() {

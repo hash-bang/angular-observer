@@ -33,7 +33,7 @@ angular.module('angular-observer', [])
 	};
 })
 .factory('$observe', function($observeProvider, $timeout) {
-	// INCLUDE src/observer.js //
+	// INCLUDE src/obsvr.js //
 
 	$observe.checkAll = $observeProvider.checkAll;
 

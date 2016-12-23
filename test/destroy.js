@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var $observe = require('../src/observer');
+var $observe = require('../src/obsvr');
 
 describe('$observe - destruction', function() {
 	it('should no longer detect changes when destroyed', function(next) {
