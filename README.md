@@ -6,6 +6,7 @@ Features:
 
 * Watch an object hierarchically by path
 * Fully-featured event system - `emit(), on()`, `one()`, `once()`, `off()` are all supported
+* Self-destructing watchers - remove the watcher completely when no other hooks are present (works well with `once` / `one` event handlers to only capture one change then stop watching)
 
 
 ```javascript
@@ -110,10 +111,12 @@ Callback is optional, if provided it will be automatically bound with `Observabl
 
 Config is an optional object of options to configure $observe's behaviour. If `config` is a number it will be assumed that `{deep: CONFIG}` was specified.
 
-| Option | Type             | Default | Description                                                                                         |
-|--------|------------------|---------|-----------------------------------------------------------------------------------------------------|
-| `deep` | `true` OR Number | `1`     | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
-| `root` | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
+| Option              | Type             | Default | Description                                                                                         |
+|---------------------|------------------|---------|-----------------------------------------------------------------------------------------------------|
+| `deep`              | `true` OR Number | `1`     | The maximum depth to iterate when watching a target. If the value is `true` all levels are examined |
+| `root`              | `true` OR String | `true`  | If a string is specified all paths used in event emitters are made relative to the one specified, if true the relative path is calculated from the provided paths only if a single path was specified (this replicates the default behaviour of Angular) |
+| `selfDestruct`      | Boolean          | `true`  | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
+| `selfDestructHooks` | Arrray           | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
 
 
 $observe.checkAll()
@@ -171,7 +174,7 @@ The following events can be attached to any Observable instance:
 | Event        | Parameters         | Description                                                                                     |
 |--------------|--------------------|-------------------------------------------------------------------------------------------------|
 | `change`     | `(newValue)`       | Emitted if any part of the observable target changes                                            |
-| `destroy`    | `()`               | Emitted when the observer is destroyed                                                          |
+| `destroy`    | `(method)`         | Emitted when the observer is destroyed method can be 'manual' or 'selfDestruct'                 |
 | `key`        | `(key, newValue)`  | Emitted if the observable target is an object and any of the *top level only* key values change |
 | `path`       | `(path, newValue)` | Emitted if any deeply nested paths change within the observable                                 |
 | `postChange` | `(newValue)`       | Emitted after all other keys have finished before the next injection stage                      |

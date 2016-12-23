@@ -6,6 +6,9 @@ var $observe = function(scope, paths, callback, params) {
 	observe.paths = _.castArray(paths);
 	observe.originalValues = {};
 	observe.deep = 1;
+	observe.selfDestruct = true;
+	observe.selfDestructHooks = ['change', 'key', 'path'];
+	observe.isDestoyed = false;
 
 	/**
 	* Whether the path returned in event emitters is relitive to something else within the scope
@@ -31,7 +34,18 @@ var $observe = function(scope, paths, callback, params) {
 			if (!_.isNumber(params.deep) && params.deep !== true) throw new Error('Deep config option either should be a maximum depth number or boolean true');
 			observe.deep = params.deep;
 		}
-		if (_.has(params, 'root')) observe.root = params.root;
+		if (_.has(params, 'root')) {
+			if (observe.root !== true && !_.isNumber(observe.root)) throw new Error('Root must be boolean true or a number');
+			observe.root = params.root;
+		}
+		if (_.has(params, 'selfDestruct')) {
+			if (!_.isBoolean(params.selfDestruct)) throw new Error('selfDestruct must be a boolean');
+			observe.selfDestruct = params.selfDestruct;
+		}
+		if (_.has(params, 'selfDestructHooks')) {
+			if (!_.isArray(params.selfDestructHooks)) throw new Error('selfDestructHooks must be an array');
+			observe.selfDestructHooks = params.selfDestructHooks;
+		}
 	}
 	// }}}
 	// Calculate params.root if its in auto mode {{{
@@ -129,6 +143,8 @@ var $observe = function(scope, paths, callback, params) {
 	* @return {Object} This chainable object
 	*/
 	observe.check = function() {
+		if (observe.isDestroyed) throw new Error('observer has been destroyed');
+
 		var modified = observe.isModified();
 		if (modified.length) observe.emit('change', observe.get());
 
@@ -176,7 +192,10 @@ var $observe = function(scope, paths, callback, params) {
 		});
 
 		// Remove all once==true hooks if we saw any
-		if (removeOnce) observe.hooks[hook] = observe.hooks[hook].filter(hook => !hook.once);
+		if (removeOnce) {
+			observe.hooks[hook] = observe.hooks[hook].filter(hook => !hook.once);
+			observe.checkSelfDestruct();
+		}
 
 		return observe;
 	};
@@ -240,6 +259,7 @@ var $observe = function(scope, paths, callback, params) {
 				return h.id == cb;
 			}
 		});
+		observe.checkSelfDestruct();
 		return observe;
 	};
 	// }}}
@@ -247,10 +267,25 @@ var $observe = function(scope, paths, callback, params) {
 	// Destruction {{{
 	/**
 	* Destroys this object and deregisters it with the $observeProvider service
+	* @param {string} method The reason we are being destroyed. ENUM: 'manual', 'selfDestruct'
 	*/
-	observe.destroy = function() {
+	observe.destroy = function(method) {
 		// INCLUDEIF $observeProvider: $observeProvider.deregister(observe); //
-		observe.emit('destroy');
+		observe.emit('destroy', method || 'manual');
+		observe.isDestroyed = true;
+	};
+
+
+	/**
+	* Check whether we should self-destruct
+	* This should be called every time a hook is removed
+	* @return {Object} This chainable object
+	*/
+	observe.checkSelfDestruct = function() {
+		if (observe.selfDestruct && observe.selfDestructHooks.every(hook => !observe.hooks[hook] || !observe.hooks[hook].length)) { // All required hooks either don't exist or are empty
+			observe.destroy('selfDestruct');
+		}
+		return observe;
 	};
 	// }}}
 
