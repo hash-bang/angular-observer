@@ -1,4 +1,4 @@
-angular.module('app', ['angular-observer'])
+angular.module('app', ['angular-obsvr'])
 	.component('demoCtrl', {
 		template: $element => $element.html(), // Slurp the inner contents of the component into the template (poor mans ng-controller)
 		controller: function($observe) {

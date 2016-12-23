@@ -61,10 +61,10 @@ Whats happening here:
 
 
 
-Installation
-============
-1. Add `angular-observer` as a module in your main `angular.module()` call.
-2. Include the service somewhere in your project by either loading the `angular-observer.js` file or rolling into your minifier / webpack / concat process of choice.
+Installation within Angular
+===========================
+1. Add `angular-obsvr` as a module in your main `angular.module()` call.
+2. Include the service somewhere in your project by either loading the `dist/angular-obsvr.js` file or rolling into your minifier / webpack / concat process of choice.
 3. Add `$observe` as a dependency to any controller you wish to use it in.
 
 

@@ -1,4 +1,4 @@
-angular.module('angular-observer', [])
+angular.module('angular-obsvr', [])
 .provider('$observeProvider', function() {
 	/**
 	* The observers to update on a call to $observerProvider.checkAll
