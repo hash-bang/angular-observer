@@ -181,6 +181,7 @@ var $observe = function(scope, paths, callback, params) {
 						configurable: true,
 						get: ()=> nodeValue,
 						set: function(v) {
+							if (nodeValue == v) return; // Setting to existing value anyway - skip
 							observe.setModified(nodePath);
 
 							nodeValue = v;
