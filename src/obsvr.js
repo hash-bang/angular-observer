@@ -106,7 +106,9 @@ var $observe = function(scope, paths, callback, params) {
 			item.forEach((v, k) => observe.traverse(cb, (path||[]).concat([k]), v, depth ? depth + 1 : 1));
 		} else if (_.isObject(item)) {
 			if (_.isNumber(observe.deep) && depth > observe.deep) return; // Refuse to go any deeper
-			_.keys(item).forEach((k) => observe.traverse(cb, (path||[]).concat([k]), item[k], depth ? depth + 1 : 1));
+			_.keys(item)
+				.filter(k => !observe.ignoreKeys.some(ik => ik.test(k)))
+				.forEach(k => observe.traverse(cb, (path||[]).concat([k]), item[k], depth ? depth + 1 : 1));
 		} else {
 			cb(item, path ? path[path.length-1] : '', path||[]);
 		}
@@ -189,6 +191,7 @@ var $observe = function(scope, paths, callback, params) {
 						get: ()=> nodeValue,
 						set: function(v) {
 							if (!observe.setEqualIsChange && nodeValue == v) return; // Setting to existing value anyway - skip
+							// console.log('SET', nodePath, 'NEW=', v, 'OLD=', nodeValue);
 							observe.setModified(nodePath);
 
 							nodeValue = v;
@@ -392,11 +395,17 @@ var $observe = function(scope, paths, callback, params) {
 			var checkKeys = function(node, path) {
 				var needInject = false;
 				_.forEach(node, (v, k) => {
-					if (!_.isObject(node[k]) && !_.isUndefined(Object.getOwnPropertyDescriptor(node, k).value)) {
+					if (
+						!_.isObject(node[k]) &&
+						!_.isUndefined(Object.getOwnPropertyDescriptor(node, k).value) &&
+						!observe.ignoreKeys.some(ik => ik.test(k))
+					) {
 						observe.setModified(path.concat([k]));
 						needInject = true;
 					}
 				});
+
+				if (needInject) observe._injectSetters(node, path, path.length);
 			};
 
 			_(observe.paths)
