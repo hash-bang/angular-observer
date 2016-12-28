@@ -15,6 +15,7 @@ var $observe = function(scope, paths, callback, params) {
 	observe.scanKeyChange = true;
 	observe.hookWarnings = true;
 	observe.seperator = '.';
+	observe.setEqualIsChange = false
 
 	/**
 	* Whether the path returned in event emitters is relitive to something else within the scope
@@ -61,7 +62,7 @@ var $observe = function(scope, paths, callback, params) {
 			observe[k] = params[k];
 		});
 		// Booleans
-		['selfDestruct', 'scanKeyChange', 'hookWarnings'].forEach(k => {
+		['selfDestruct', 'scanKeyChange', 'hookWarnings', 'setEqualIsChange'].forEach(k => {
 			if (_.isUndefined(params[k])) return;
 			if (!_.isBoolean(params[k])) throw new Error(k + ' must be a boolean');
 			observe[k] = params[k];
@@ -181,7 +182,7 @@ var $observe = function(scope, paths, callback, params) {
 						configurable: true,
 						get: ()=> nodeValue,
 						set: function(v) {
-							if (nodeValue == v) return; // Setting to existing value anyway - skip
+							if (!observe.setEqualIsChange && nodeValue == v) return; // Setting to existing value anyway - skip
 							observe.setModified(nodePath);
 
 							nodeValue = v;

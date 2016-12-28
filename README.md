@@ -159,6 +159,7 @@ Config is an optional object of options to configure `$observe`'s behaviour. If 
 | `selfDestruct`      | Boolean          | `true`    | Whether the object should call `Observer.destruct()` when all the hooks listed in `selfDestructHooks` are empty. Set this to false if you intend to dynamically attach hooks to the Observer object at a later date |
 | `selfDestructHooks` | Array            | `['change', 'key', 'path']` | What hooks to watch if `selfDestruct=true`                                      |
 | `seperator`         | String           | `.`       | The path definition seperator. Change this to forward slashes or something if you want to integrate with a globbing library |
+| `setEqualIsChange`  | Boolean          | `false`   | Indicates that setting a value _to its current value_ counts as a change condition. e.g. setting a boolean which is already `true` to `true` will mark that path as modified |
 
 
 $observe.deep(scope, path, [callback], [config | depth])
