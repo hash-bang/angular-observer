@@ -1,6 +1,6 @@
 {
   "name": "obsvr",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Swiss-army knife for observation of objects (Angular compatible)",
   "main": "src/obsvr.js",
   "scripts": {
