@@ -28,6 +28,8 @@ var $observe = function(scope, paths, callback, params) {
 		throw new Error('You must specify a scope to use');
 	} else if (!paths) {
 		throw new Error('You must specify a path or paths to watch');
+	} else if (_.isFunction(callback)) {
+		// Pass
 	} else if (_.isObject(callback) || _.isNumber(callback)) {
 		params = callback;
 		callback = undefined;
