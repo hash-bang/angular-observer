@@ -16,6 +16,7 @@ var $observe = function(scope, paths, callback, params) {
 	observe.hookWarnings = true;
 	observe.seperator = '.';
 	observe.setEqualIsChange = false
+	observe.ignoreKeys = [/^\$/];
 
 	/**
 	* Whether the path returned in event emitters is relitive to something else within the scope
@@ -47,15 +48,18 @@ var $observe = function(scope, paths, callback, params) {
 			if (observe.root !== true && !_.isNumber(observe.root)) throw new Error('Root must be boolean true or a number');
 			observe.root = params.root;
 		}
-		if (_.has(params, 'selfDestructHooks')) {
-			if (!_.isArray(params.selfDestructHooks)) throw new Error('selfDestructHooks must be an array');
-			observe.selfDestructHooks = params.selfDestructHooks;
-		}
 		if (_.has(params, 'ignoreInitial')) {
 			if (params.ignoreInitial !== false && !_.isString(params.ignoreInitial) && !_.includes(['once', 'any', 'all'])) throw new Error('ignoreInitial must be "never", "any", "all" or boolean false');
 			observe.ignoreInitial = params.ignoreInitial;
 		}
-		// Simple strings
+		// Arrays
+		['ignoreKeys', 'selfDestructHooks'].forEach(k => {
+			if (_.has(params, k)) {
+				if (!_.isArray(params[k])) throw new Error(k + ' must be an array');
+				observe[k] = params[k];
+			}
+		});
+		// Strings
 		['seperator'].forEach(k => {
 			if (_.isUndefined(params[k])) return;
 			if (!_.isString(params[k])) throw new Error(k + ' must be a string');
@@ -172,6 +176,8 @@ var $observe = function(scope, paths, callback, params) {
 
 		var inject = _(obj) // Object of defineProperties structure we are going to inject into this object
 			.mapValues(function(v, k) {
+				if (observe.ignoreKeys.some(ik => ik.test(k))) return;
+
 				var nodePath = path.concat([k]);
 				var nodeValue = v;
 				if (_.isObject(v)) {
