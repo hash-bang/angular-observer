@@ -200,6 +200,7 @@ var $observe = function(scope, paths, callback, params) {
 			.pickBy(v => !!v) // Remove all undefined items (because they got injected seperately) or things we dont want to deal with anyway
 			.value()
 
+		// Override array functions with our own values which mutate + mark as modified {{{
 		if (isArray) {
 			inject.isArray = {
 				enumerable: false,
@@ -241,7 +242,9 @@ var $observe = function(scope, paths, callback, params) {
 				};
 			})
 		}
+		// }}}
 
+		// Inject the custom toObject function {{{
 		inject.toObject = {
 			replacePrototype: true,
 			enumerable: false,
@@ -257,7 +260,9 @@ var $observe = function(scope, paths, callback, params) {
 				});
 			},
 		};
+		// }}}
 
+		// Inject the custom toString function {{{
 		inject.toString = {
 			replacePrototype: true,
 			enumerable: false,
@@ -266,11 +271,14 @@ var $observe = function(scope, paths, callback, params) {
 				return 'Hello Angular';
 			},
 		};
+		// }}}
 
+		// Mark this object as mutated {{{
 		inject.$obsvr = {
 			enumerable: false,
 			value: true,
 		};
+		// }}}
 
 		// Attempt to inject all the composed properties {{{
 		inject = _.pickBy(inject, (dp, k) => (
