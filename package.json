@@ -4,7 +4,8 @@
   "description": "Swiss-army knife for observation of objects (Angular compatible)",
   "main": "src/obsvr.js",
   "scripts": {
-    "deploy": "node demo/server.js"
+    "deploy": "node demo/server.js",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
